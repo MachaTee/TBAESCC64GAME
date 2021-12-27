@@ -78,14 +78,14 @@ void InitializeItems()
 
 	// Generic item attribution initialization
 	{
-		french_fries                            = GenericItem;
-		cake_slice                                      = GenericItem;
-		cheese_round                            = GenericItem;
-		strange_stew                            = GenericItem;
-		bronze_shortsword               = GenericItem;
-		leather_jerkin                  = GenericItem;
-		leather_pants                           = GenericItem;
-		leather_boots                           = GenericItem;
+		french_fries            = GenericItem;
+		cake_slice              = GenericItem;
+		cheese_round            = GenericItem;
+		strange_stew            = GenericItem;
+		bronze_shortsword       = GenericItem;
+		leather_jerkin          = GenericItem;
+		leather_pants           = GenericItem;
+		leather_boots           = GenericItem;
 		kitten_major_annoy      = GenericItem;
 	}
 
