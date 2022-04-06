@@ -43,12 +43,6 @@ char scolordata[1000];
 
 bool ssb;
 
-void putat(int x, int y, char *input)
-{
-	gotoxy(x,y);
-	printf("%s", input);
-}
-
 int CollisionProcessX, CollisionProcessY;
 
 #include "items.h"
@@ -56,13 +50,14 @@ int CollisionProcessX, CollisionProcessY;
 #include "entities.h"
 
 #define HP_RENDER_OFFSET 25
+
 void DeathSequence()
 {
 	*(char*)0x00C6 = 0;                                                 // Clears the keyboard buffer
 	clrscr();
 	textcolor(FGC2);
-	putat(10,10," G A M E   O V E R !");
-	putat(10,11,"  Y O U   D I E D !");
+	cputsxy(10,10," G A M E   O V E R !");
+	cputsxy(10,11,"  Y O U   D I E D !");
 	while (1) {}
 }
 
@@ -81,17 +76,14 @@ void PlayerHealthUpdate()
 	hstr[hLen]            =  '\0';
 	mstr[mLen]        =  '\0';
 
-	if (PlayerEntity.hp == 0)
-	{
-		DeathSequence();
-	}
+	if (PlayerEntity.hp == 0) DeathSequence();
 
-	textcolor(FGC3);
-	putat		(HP_RENDER_OFFSET,1,"             ");
-	putat		(HP_RENDER_OFFSET,1,"HP: ");
-	putat		(HP_RENDER_OFFSET+4,1,hstr);
-	cputcxy	(HP_RENDER_OFFSET+5+hLen,1,'/');
-	putat		(HP_RENDER_OFFSET+7+hLen,1,mstr);
+	textcolor	(FGC3);
+	cputsxy		(HP_RENDER_OFFSET,1,"             ");
+	cputsxy		(HP_RENDER_OFFSET,1,"HP: ");
+	cputsxy		(HP_RENDER_OFFSET+4,1,hstr);
+	cputcxy		(HP_RENDER_OFFSET+5+hLen,1,'/');
+	cputsxy		(HP_RENDER_OFFSET+7+hLen,1,mstr);
 }
 
 bool collisionDetectionHelper(char getPeek, bool isEntity)
@@ -120,24 +112,22 @@ int wallCollisionDetection(int direction, bool isEntity)
 	{
 	case 0:
 		gotoxy(CollisionProcessX, CollisionProcessY-1);
-		return(collisionDetectionHelper(cpeekc(), isEntity));
 		break;
 	case 1:
 		gotoxy(CollisionProcessX, CollisionProcessY+1);
-		return(collisionDetectionHelper(cpeekc(), isEntity));
 		break;
 	case 2:
 		gotoxy(CollisionProcessX-1, CollisionProcessY);
-		return(collisionDetectionHelper(cpeekc(), isEntity));
 		break;
 	case 3:
 		gotoxy(CollisionProcessX+1, CollisionProcessY);
-		return(collisionDetectionHelper(cpeekc(), isEntity));
 		break;
 	default:
 		return FALSE;
 		break;
 	}
+	return(collisionDetectionHelper(cpeekc(), isEntity));
+
 }
 
 #include "entityfuncs.h"
@@ -191,14 +181,16 @@ char wallx2[40];
 char wally1[25];
 char wally2[25];
 
+char xcoordstr[5];
+char ycoordstr[5];
+
 void drawCoords()
 {
-	char str1[5];
-	char str2[5];
-	itoa(PlayerEntity.PositionX, str1, 10);
-	itoa(PlayerEntity.PositionY, str2, 10);
-	putat(1, 40, str1);
-	putat(5, 40, str2);
+	itoa(PlayerEntity.PositionX, xcoordstr, 10);
+	itoa(PlayerEntity.PositionY, ycoordstr, 10);
+	cputsxy(25, 24, xcoordstr);
+	cputsxy(30, 24, ycoordstr);
+
 }
 
 void drawbox(int x1, int y1, int x2, int y2)
@@ -239,10 +231,7 @@ void drawVerticalLine(int x1, int x2, int y1)
 void drawHorizontalLine(int y1, int y2, int x1)
 {
 	int a;
-	for (a = y1; a < y2; a++)
-	{
-		cputcxy(a, x1, HorizontalCollider);
-	}
+	for (a = y1; a < y2; a++) cputcxy(a, x1, HorizontalCollider);
 	cputcxy(y1, x1, LeftVerticalCollider);
 	cputcxy(y2, x1, RightVerticalCollider);
 }
@@ -251,7 +240,7 @@ void InventoryChangeColor(bool u)
 {
 	for (hcounter = 0; hcounter < 40; hcounter++)
 	{
-		if (u == TRUE)
+		if (u)
 		{
 			gotoxy(hcounter, 4+scroll);
 			textcolor(FGC3);
@@ -275,7 +264,7 @@ bool DisplayInventory;
 void showInventory()
 {
 
-	struct item *CurrentItems[10];
+	struct item *CurrentItems[10] = { NULL };
 
 	int displayQuant = 0;
 	int tmp;
@@ -293,9 +282,9 @@ void showInventory()
 
 	DisplayInventory = FALSE;
 	// Start displaying inventory
-	putat(1,1, "--- Macha's Inventory --- ");
+	cputsxy(1,1, "--- Player's Inventory --- ");
 	PlayerHealthUpdate();
-	putat(1,2, "- Miscellaneous items:");
+	cputsxy(1,2, "- Miscellaneous items:");
 	for (tmp=0; tmp < 10; tmp++)
 	{
 		if (ItemIterator[tmp]->ItemQuantity != 0)
@@ -303,15 +292,15 @@ void showInventory()
 			if (ItemIterator[tmp]->ItemType == EQUIP&&!StartEquipmentPrinting)
 			{
 				StartEquipmentPrinting = TRUE;
-				putat(1,3+inventoryPosition, "- Equipment Items:");
+				cputsxy(1,3+inventoryPosition, "- Equipment Items:");
 				++displayQuant;
 			}
 			CurrentItems[displayQuant] = ItemIterator[tmp];
-			putat(5,3+inventoryPosition+StartEquipmentPrinting, ItemIterator[tmp]->ItemName);
+			cputsxy(5,3+inventoryPosition+StartEquipmentPrinting, ItemIterator[tmp]->ItemName);
 			itoa(ItemIterator[tmp]->ItemQuantity, istr, 10);
 			if (ItemIterator[tmp]->ItemType == EQUIP&&ItemIterator[tmp]->IsEquipped == TRUE)
-				putat(22,3+inventoryPosition+StartEquipmentPrinting,"Equipped");
-			else putat(22,3+inventoryPosition+StartEquipmentPrinting,istr);
+				cputsxy(22,3+inventoryPosition+StartEquipmentPrinting,"Equipped");
+			else cputsxy(22,3+inventoryPosition+StartEquipmentPrinting,istr);
 			++displayQuant;
 			++inventoryPosition;
 		}
@@ -319,10 +308,13 @@ void showInventory()
 
 	InventoryChangeColor(FALSE);
 	textcolor(0xE);
-	putat(0, 22, CurrentItems[0]->ItemDescription);
+	cputsxy(0, 22, CurrentItems[0]->ItemDescription);
 
 	*(char*)0x00C6 = 0;                                                 // Clears the keyboard buffer
 
+
+	// Bound keys for inventory controls
+	// E = consume, W = up, S = down Q = quit
 	while ((key = cgetc())!='q')
 	{
 		switch(key)
@@ -334,7 +326,7 @@ void showInventory()
 				PlayerEntity.hp += CurrentItems[scroll]->hp;
 				if (PlayerEntity.hp > PlayerEntity.maxHp) PlayerEntity.hp = PlayerEntity.maxHp;
 				PlayerHealthUpdate();
-				DisplayInventory == TRUE;
+				DisplayInventory = TRUE;
 				ssb = FALSE;
 				showInventory();
 				return;
@@ -344,11 +336,11 @@ void showInventory()
 			if (scroll!=0)
 			{
 				scroll--;
-				putat(0,22, LINE_BLANK);
-				putat(0,23, LINE_BLANK);
+				cputsxy(0,22, LINE_BLANK);
+				cputsxy(0,23, LINE_BLANK);
 				cputcxy(40, 22, ' ');
 				textcolor(0xE);
-				putat(0, 22, CurrentItems[scroll]->ItemDescription);
+				cputsxy(0, 22, CurrentItems[scroll]->ItemDescription);
 			}
 			InventoryChangeColor(TRUE);
 			break;
@@ -356,11 +348,11 @@ void showInventory()
 			if (scroll!=displayQuant-1)
 			{
 				scroll++;
-				putat(0,22, LINE_BLANK);
-				putat(0,23, LINE_BLANK);
+				cputsxy(0,22, LINE_BLANK);
+				cputsxy(0,23, LINE_BLANK);
 				cputcxy(40, 22, ' ');
 				textcolor(0xE);
-				putat(0, 22, CurrentItems[scroll]->ItemDescription);
+				cputsxy(0, 22, CurrentItems[scroll]->ItemDescription);
 			}
 			InventoryChangeColor(FALSE);
 			break;
@@ -402,7 +394,6 @@ fallback:
 }
 
 int actualSpeed;
-bool keyHeld;
 bool CanMove;
 bool ssb;
 
@@ -413,12 +404,13 @@ int main()
 	InitializeEntities();
 	cursor(0);
 	clrscr();
-	actualSpeed = 40-PlayerEntity.MovementSpeed;
-	putat(1, 1,"Macha Teesfield");
-	//putat(30,1,"HP: 20/20");
+	actualSpeed = MAX_FIELD_RATE-PlayerEntity.MovementSpeed;
+	cputsxy(1, 1,"Player Name");
 	PlayerHealthUpdate();
 	drawMap(1);
-	// GLOBAL WAITING FUNCTION BUT BOUND TO PLAYER
+
+
+	// Program Loop
 	while (1)
 	{
 		EntityUpdate();
@@ -426,18 +418,11 @@ int main()
 		textcolor(PlayerEntity.TrailForegroundColor);
 		cputcxy(PlayerEntity.PositionX,PlayerEntity.PositionY,PlayerEntity.TrailRepresentation);
 		textcolor(PlayerEntity.ForegroundColor);
+	
+		if (*(unsigned char*)0x00A2%actualSpeed == actualSpeed-1) CanMove = TRUE;
 
-		key = *(char*)0x00C5;
-		fieldcounter++;
-
-		if (keyHeld == TRUE) CanMove = (((*(char*)0x00A2)%60)%actualSpeed)==(actualSpeed-1);
-		else CanMove = TRUE;
-
-		if (key != 64) keyHeld = TRUE;
-		else keyHeld = FALSE;
-
-		if (fieldcounter >= 60) fieldcounter = 0;
-		switch(key)
+		
+		switch(*(char*)0x00C5)
 		{
 		case 9:
 			if (CanMove)
@@ -445,6 +430,8 @@ int main()
 				CollisionProcessX = PlayerEntity.PositionX;
 				CollisionProcessY = PlayerEntity.PositionY;
 				if (wallCollisionDetection(0, FALSE) == FALSE) PlayerEntity.PositionY--;
+				*(unsigned char*)0x00A2 = 0;
+				CanMove = FALSE;
 			}
 			break;
 		case 13:
@@ -453,6 +440,8 @@ int main()
 				CollisionProcessX = PlayerEntity.PositionX;
 				CollisionProcessY = PlayerEntity.PositionY;
 				if (wallCollisionDetection(1, FALSE) == FALSE) PlayerEntity.PositionY++;
+				*(unsigned char*)0x00A2 = 0;
+				CanMove = FALSE;
 			}
 			break;
 		case 10:
@@ -461,6 +450,8 @@ int main()
 				CollisionProcessX = PlayerEntity.PositionX;
 				CollisionProcessY = PlayerEntity.PositionY;
 				if (wallCollisionDetection(2, FALSE) == FALSE) PlayerEntity.PositionX--;
+				*(unsigned char*)0x00A2 = 0;
+				CanMove = FALSE;
 			}
 			break;
 		case 18:
@@ -469,6 +460,8 @@ int main()
 				CollisionProcessX = PlayerEntity.PositionX;
 				CollisionProcessY = PlayerEntity.PositionY;
 				if (wallCollisionDetection(3, FALSE) == FALSE) PlayerEntity.PositionX++;
+				*(unsigned char*)0x00A2 = 0;
+				CanMove = FALSE;
 			}
 			break;
 		case 14:
@@ -477,12 +470,12 @@ int main()
 			break;
 		case 'f':
 			++apple.ItemQuantity;
+			break;
 		default:
 			break;
 		}
 		cputcxy(PlayerEntity.PositionX,PlayerEntity.PositionY,PlayerEntity.EntityRepresentation);
 		drawCoords();
-
 	}
 	cursor(1);
 	return(0);

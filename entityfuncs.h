@@ -34,7 +34,7 @@ void InitializeEntities()
 		PlayerEntity.def = 0;
 		PlayerEntity.atk = 1;
 		PlayerEntity.critchance = 1;
-		PlayerEntity.MovementSpeed = 37;
+		PlayerEntity.MovementSpeed = 55;
 		PlayerEntity.PositionX = 10;
 		PlayerEntity.PositionY = 10;
 
